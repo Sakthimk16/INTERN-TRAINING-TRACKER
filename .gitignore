@@ -1,0 +1,8 @@
+bin/
+obj/
+node_modules/
+dist/
+.env
+.vs/
+# local-only config with secrets/passwords - never commit
+backend/InternTracker.Api/appsettings.Development.json

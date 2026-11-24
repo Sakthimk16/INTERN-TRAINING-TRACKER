@@ -1,0 +1,80 @@
+### Quick API checks (VS Code "REST Client" extension or Visual Studio). Start the API first.
+@host = http://localhost:5080
+
+### 1. Trainer login -> copy the token into @trainerToken below
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "anita@example.com", "password": "Password@123", "role": "Trainer" }
+
+### 2. Same user, wrong role -> must be 401 "Invalid email or password."
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "anita@example.com", "password": "Password@123", "role": "Trainee" }
+
+### 3. Trainee login -> copy the token into @traineeToken below
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "priya@example.com", "password": "Password@123", "role": "Trainee" }
+
+###
+@trainerToken = PASTE_TRAINER_TOKEN
+@traineeToken = PASTE_TRAINEE_TOKEN
+
+### 4. Trainer: list trainees
+GET {{host}}/api/trainees
+Authorization: Bearer {{trainerToken}}
+
+### 5. Trainer: add trainee (run twice -> second time 409 on email, also try UPPER CASE email)
+POST {{host}}/api/trainees
+Authorization: Bearer {{trainerToken}}
+Content-Type: application/json
+
+{ "name": "Test Intern", "email": "test.intern@example.com", "initialPassword": "Welcome@123" }
+
+### 6. Trainer: create assignment
+POST {{host}}/api/assignments
+Authorization: Bearer {{trainerToken}}
+Content-Type: application/json
+
+{ "traineeId": 2, "topic": "TypeScript Basics", "videoUrl": "https://www.typescriptlang.org/docs/", "notes": "Read the handbook intro", "dueDate": "2026-12-10" }
+
+### 7. Trainer: list assignments + summary
+GET {{host}}/api/assignments
+Authorization: Bearer {{trainerToken}}
+
+###
+GET {{host}}/api/dashboard/summary
+Authorization: Bearer {{trainerToken}}
+
+### 8. Trainee: my assignments + summary (Priya: total 5, completed 2, overdue 1, 40%)
+GET {{host}}/api/assignments/mine
+Authorization: Bearer {{traineeToken}}
+
+###
+GET {{host}}/api/dashboard/summary
+Authorization: Bearer {{traineeToken}}
+
+### 9. Trainee: read own assignment (id 5 = React Basics) -> 200
+GET {{host}}/api/assignments/5
+Authorization: Bearer {{traineeToken}}
+
+### 10. Trainee: read ANOTHER trainee's assignment (id 6 belongs to Rahul) -> must be 404
+GET {{host}}/api/assignments/6
+Authorization: Bearer {{traineeToken}}
+
+### 11. Trainee: update status
+PATCH {{host}}/api/assignments/5/status
+Authorization: Bearer {{traineeToken}}
+Content-Type: application/json
+
+{ "status": "Completed" }
+
+### 12. Trainee tries a trainer endpoint -> must be 403
+GET {{host}}/api/trainees
+Authorization: Bearer {{traineeToken}}
+
+### 13. No token -> 401
+GET {{host}}/api/assignments/mine
